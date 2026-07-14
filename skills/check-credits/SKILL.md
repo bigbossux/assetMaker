@@ -9,10 +9,10 @@ Read-only — costs nothing, never needs confirmation.
 
 ## Balance
 
-`atlas_get_balance`, or if that tool is failing auth (see `setup`'s troubleshooting section), fall back to:
-```bash
-curl -s -H "Authorization: Bearer $ATLASCLOUD_API_KEY" https://api.atlascloud.ai/public/v1/balance
-```
+`atlas_get_balance` needs a working `ATLASCLOUD_API_KEY` exactly like generation does — this is not a lighter-weight check that somehow skips auth. If it fails with "Invalid or expired API key":
+
+- **Claude Code CLI / Desktop**: fall back to `curl -s -H "Authorization: Bearer $ATLASCLOUD_API_KEY" https://api.atlascloud.ai/public/v1/balance` — see `setup`'s Path A / `generate-asset`'s troubleshooting section if that also fails.
+- **Cowork**: there's no curl fallback available (no shell access to a real key). This means the plugin-bundled `atlascloud` connector was never given a real key — point the user to `setup`'s Path B (add a custom connector by hand with the real key typed into it). Don't retry `atlas_get_balance` repeatedly hoping it resolves itself; it won't without that one-time setup step.
 
 Report `available` clearly, e.g. "$5.88 available."
 

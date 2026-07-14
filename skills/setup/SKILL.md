@@ -49,10 +49,17 @@ Confirmed by direct testing: Cowork does not do shell-style `${VAR}` expansion a
 **The actual working path is to add your own custom connector, separately from installing the plugin:**
 
 1. In Cowork, go to **Settings → Customize → Connectors → Add → "Add custom connector"**.
-2. Configure it to match what this plugin's `.mcp.json` declares for `atlascloud`:
-   - **Command**: `npx`
-   - **Arguments**: `-y atlascloud-mcp`
-   - **Environment Variables**: `ATLASCLOUD_API_KEY` = *the real key, typed directly into this form* — this field is editable here (unlike the plugin-bundled connector's read-only view), so this is also where you'd rotate the key later.
+2. Fill in the form's fields exactly like this (these are the exact field labels Cowork's custom-connector form uses):
+
+   | Field in the form | Exact value to type in |
+   |---|---|
+   | **Name** | `atlascloud` — or anything distinguishable, e.g. `atlascloud (working)`, since the non-functional plugin-bundled one may also show up in lists under a similar name |
+   | **Command** | `npx` |
+   | **Arguments** | `-y atlascloud-mcp` |
+   | **Environment Variables** — variable name | `ATLASCLOUD_API_KEY` |
+   | **Environment Variables** — variable value | the user's actual Atlas Cloud key, e.g. `apikey-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` — get it from https://www.atlascloud.ai/console/api-keys if they don't have one. Type the real key directly, never `${ATLASCLOUD_API_KEY}` or any other placeholder — Cowork does not expand those. |
+
+   Don't paraphrase or improvise field names here — Cowork's form fields are named exactly `Command`, `Arguments`, and `Environment Variables` (confirmed from the read-only plugin-bundled connector's own detail view, which uses the same labels); if the user reports different field names in the actual "Add custom connector" form, that's a `log-lesson`-worthy update to make immediately, not something to guess past.
 3. Tell the user explicitly: the plugin's own bundled `atlascloud` entry will still show up (and still won't work) — the connector they just added by hand is the one that actually works. This can be confusing since both may be visibly named similarly; make sure the user knows which one is live.
 
 This custom-connector workaround, and the read-only/no-prompt behavior it works around, are both undocumented by Anthropic and may change — re-verify this path still applies before repeating it in a future session, and update this section via `log-lesson` if it does.
