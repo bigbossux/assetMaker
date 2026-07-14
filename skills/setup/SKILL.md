@@ -42,29 +42,30 @@ Atlas Cloud powers all paid generation (image/video/audio models). **How you set
 2. If confirmed, fall back to calling the Atlas Cloud REST API directly via `curl` for generation calls in this session (see `generate-asset` skill) rather than the `mcp__atlascloud__*` tools, and tell the user the MCP layer needs a fresh chat (not just an app restart) to pick up the current config.
 3. `atlas_get_model_info` / `atlas_search_docs` are read-only and tend to keep working even when the auth-gated tools (`atlas_get_balance`, `atlas_generate_*`, `atlas_upload_media`) don't — safe to use those for model lookups regardless.
 
-### Path B: Cowork (GUI-based — the plugin's bundled connector will NOT work here)
+### Path B: Cowork (MCP will never work here for this server — use direct API calls instead)
 
-Confirmed by direct testing: Cowork does not do shell-style `${VAR}` expansion at all. The `atlascloud` MCP server that comes bundled with this plugin (declared in `.mcp.json` as `"ATLASCLOUD_API_KEY": "${ATLASCLOUD_API_KEY}"`) gets installed with that literal placeholder text as its value — not a real key, and not expanded from anywhere. Worse, once installed via the plugin, this connector's Environment Variables field is **read-only** in Cowork's Settings UI, and reinstalling the plugin does not prompt for a real value either. There is currently no way to make the plugin-bundled `atlascloud` connector work in Cowork.
+**Ruled out by direct testing, do not re-suggest these:**
+- The `atlascloud` connector bundled with the plugin install: Cowork doesn't expand `${VAR}` placeholders, so it's stuck holding the literal text `${ATLASCLOUD_API_KEY}` as its "value," and that config is read-only after install with no reinstall-time prompt either.
+- Manually adding a custom connector (Settings → Connectors → Add → "Add custom connector"): this form is for **remote, URL-based MCP servers** only (fields are `Name`, `Remote MCP server URL`, plus optional OAuth Client ID/Secret) — there's no command, arguments, or env-var field at all. Atlas Cloud's MCP server (`atlascloud-mcp`) is a **local process launched via `npx`**, not a hosted URL — Atlas Cloud's own docs confirm they don't offer a remote/hosted MCP endpoint. The transport types are fundamentally incompatible; no combination of values in that form will ever work.
 
-**Treat what follows as a required part of installing this plugin in Cowork, not an optional fix for later.** Do it immediately after installing the plugin — don't wait for `generate-asset` or `check-credits` to fail first and only then walk the user through this.
+**The actual working approach: skip MCP for Atlas Cloud entirely in Cowork, and call the REST API directly with `curl`.** Cowork's sandbox has real bash access, so this isn't a workaround-of-last-resort like it is for the Desktop bug (Path A) — in Cowork, it's simply the only path, and every skill in this plugin should reach for it directly rather than trying `mcp__atlascloud__*` tools first and falling back.
 
-**The actual working path is to add your own custom connector, separately from installing the plugin:**
+Getting a real key into an otherwise-ephemeral session:
 
-1. In Cowork, go to **Settings → Customize → Connectors → Add → "Add custom connector"**.
-2. Fill in the form's fields exactly like this (these are the exact field labels Cowork's custom-connector form uses):
+1. Ask the user which project folder is connected/mounted in this Cowork session.
+2. Have them create a file there (never committed to git — confirm it's covered by `.gitignore`, add an entry if not) containing the key, e.g. `.env`:
+   ```
+   ATLASCLOUD_API_KEY=apikey-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+   ```
+   This file lives inside the mounted folder, so — unlike the sandbox VM itself — it persists across Cowork sessions.
+3. At the start of each task needing Atlas Cloud, read and export it before making any API call:
+   ```bash
+   export $(grep ATLASCLOUD_API_KEY .env | xargs)
+   curl -s -H "Authorization: Bearer $ATLASCLOUD_API_KEY" https://api.atlascloud.ai/public/v1/balance
+   ```
+4. Use this same pattern for all generation calls in Cowork (see `generate-asset`'s direct-`curl` examples) — `POST` to `https://api.atlascloud.ai/api/v1/model/generateVideo` / `generateImage` / `generateAudio`, poll `GET .../prediction/{id}`.
 
-   | Field in the form | Exact value to type in |
-   |---|---|
-   | **Name** | `atlascloud` — or anything distinguishable, e.g. `atlascloud (working)`, since the non-functional plugin-bundled one may also show up in lists under a similar name |
-   | **Command** | `npx` |
-   | **Arguments** | `-y atlascloud-mcp` |
-   | **Environment Variables** — variable name | `ATLASCLOUD_API_KEY` |
-   | **Environment Variables** — variable value | the user's actual Atlas Cloud key, e.g. `apikey-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` — get it from https://www.atlascloud.ai/console/api-keys if they don't have one. Type the real key directly, never `${ATLASCLOUD_API_KEY}` or any other placeholder — Cowork does not expand those. |
-
-   Don't paraphrase or improvise field names here — Cowork's form fields are named exactly `Command`, `Arguments`, and `Environment Variables` (confirmed from the read-only plugin-bundled connector's own detail view, which uses the same labels); if the user reports different field names in the actual "Add custom connector" form, that's a `log-lesson`-worthy update to make immediately, not something to guess past.
-3. Tell the user explicitly: the plugin's own bundled `atlascloud` entry will still show up (and still won't work) — the connector they just added by hand is the one that actually works. This can be confusing since both may be visibly named similarly; make sure the user knows which one is live.
-
-This custom-connector workaround, and the read-only/no-prompt behavior it works around, are both undocumented by Anthropic and may change — re-verify this path still applies before repeating it in a future session, and update this section via `log-lesson` if it does.
+This is genuinely simpler than fighting Cowork's connector UI, and — since Atlas Cloud has no remote MCP offering at all — there's no pending Anthropic/Atlas Cloud feature that would make the connector-based approach start working later. Don't re-attempt the MCP path in Cowork without first checking whether Atlas Cloud has since published a remote/hosted MCP endpoint (see `atlas_search_docs`/their docs) — that's the only thing that would change this conclusion.
 
 ## 3. Replicate (optional, opt-in — off by default)
 

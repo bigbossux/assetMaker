@@ -62,13 +62,18 @@ Before generating, check whether what's needed already exists — reusing a prio
 
 If it's unclear whether something should be reusable or one-off, ask — the cost of guessing wrong is either a cluttered library or an asset nobody can find later to avoid regenerating it.
 
-## Troubleshooting: MCP auth failing despite a good key
+## Which auth path to use — check your surface BEFORE calling anything
 
-If `mcp__atlascloud__*` tools (other than `atlas_get_model_info`/`atlas_search_docs`, which are read-only and auth-independent) return "Invalid or expired API key":
+**In Cowork, don't try `mcp__atlascloud__*` tools at all** (other than `atlas_get_model_info`/`atlas_search_docs`, which are read-only and auth-independent, and work regardless). Atlas Cloud's MCP server is a local-process/stdio server with no remote/hosted equivalent, and Cowork has no working way to configure a real key into it — this was ruled out by direct testing of every candidate mechanism (plugin-bundled connector: read-only; manual custom connector: URL-only form, wrong transport type entirely). Go straight to direct `curl` calls (see `setup`'s Path B for the full pattern — reading the key from a `.env` file in the mounted project folder, since there's no persistent shell to export it in ahead of time):
+```bash
+export $(grep ATLASCLOUD_API_KEY .env | xargs)
+curl -s -X POST "https://api.atlascloud.ai/api/v1/model/generateVideo" \
+  -H "Authorization: Bearer $ATLASCLOUD_API_KEY" -H "Content-Type: application/json" \
+  -d '{ ... }'
+```
+(swap `generateVideo` for `generateImage`/`generateAudio` as needed; poll `GET https://api.atlascloud.ai/api/v1/model/prediction/{id}`).
 
-1. Confirm the key is actually valid by hitting the REST API directly: `curl -s -H "Authorization: Bearer $ATLASCLOUD_API_KEY" https://api.atlascloud.ai/public/v1/balance`. **In Cowork, you likely can't run this** (no general shell access to a host `ATLASCLOUD_API_KEY`) — skip straight to step 3.
-2. **If you're in Claude Code CLI or Desktop** and the curl above succeeds but the MCP tool still fails: this is a known Claude Desktop bug (stale/mangled `.mcp.json` env-var expansion — see `setup` skill's Path A for detail). Don't loop on app restarts. Fall back to direct `curl` calls against `https://api.atlascloud.ai/api/v1/model/generateVideo`, `.../generateImage`, `.../generateAudio` (POST, `Authorization: Bearer $ATLASCLOUD_API_KEY`, JSON body per the model's schema) for the rest of the session, and tell the user the MCP connection needs a genuinely fresh chat to recover.
-3. **If you're in Cowork**: this is a different, more fundamental problem than Desktop's — Cowork doesn't expand `${ATLASCLOUD_API_KEY}` from anywhere, so the plugin-bundled `atlascloud` connector never had a real key in the first place, not just a stale one. There's no curl fallback available either (no shell access to a real key). Point the user to `setup`'s Path B — they need to add their own custom connector via Cowork's Settings → Customize → Connectors → Add, with the real key typed directly into that form. This isn't something you can work around mid-task; it needs the user to do that one-time setup step.
+**In Claude Code CLI or Desktop**, try `mcp__atlascloud__*` tools normally. If one returns "Invalid or expired API key" despite a good key (verify via the same curl above, using your shell's already-exported `$ATLASCLOUD_API_KEY`): this is a known Claude Desktop bug (stale/mangled `.mcp.json` env-var expansion — see `setup`'s Path A for detail). Don't loop on app restarts — fall back to direct `curl` calls for the rest of the session and tell the user the MCP connection needs a genuinely fresh chat to recover.
 
 ## Background rendering scripts (bash, not zsh)
 

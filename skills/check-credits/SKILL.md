@@ -9,10 +9,10 @@ Read-only — costs nothing, never needs confirmation.
 
 ## Balance
 
-`atlas_get_balance` needs a working `ATLASCLOUD_API_KEY` exactly like generation does — this is not a lighter-weight check that somehow skips auth. If it fails with "Invalid or expired API key":
+`atlas_get_balance` needs a working `ATLASCLOUD_API_KEY` exactly like generation does — this is not a lighter-weight check that somehow skips auth.
 
-- **Claude Code CLI / Desktop**: fall back to `curl -s -H "Authorization: Bearer $ATLASCLOUD_API_KEY" https://api.atlascloud.ai/public/v1/balance` — see `setup`'s Path A / `generate-asset`'s troubleshooting section if that also fails.
-- **Cowork**: there's no curl fallback available (no shell access to a real key). This means the plugin-bundled `atlascloud` connector was never given a real key — point the user to `setup`'s Path B (add a custom connector by hand with the real key typed into it). Don't retry `atlas_get_balance` repeatedly hoping it resolves itself; it won't without that one-time setup step.
+- **In Cowork, don't call `atlas_get_balance` at all** — Atlas Cloud's MCP server can't be configured to work there (see `setup`'s Path B; ruled out by direct testing, not just an occasional failure). Go straight to reading the key from the mounted project folder's `.env` file and calling `curl -s -H "Authorization: Bearer $ATLASCLOUD_API_KEY" https://api.atlascloud.ai/public/v1/balance` directly.
+- **Claude Code CLI / Desktop**: try `atlas_get_balance` normally; if it fails with "Invalid or expired API key" despite a good key, fall back to the same curl (using your shell's exported var) — see `setup`'s Path A / `generate-asset`'s auth-path section if that also fails.
 
 Report `available` clearly, e.g. "$5.88 available."
 

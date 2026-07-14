@@ -23,21 +23,15 @@ claude plugin install asset-maker@bigbossux
 /plugin install asset-maker@bigbossux
 ```
 
-**Cowork desktop app** uses a GUI flow instead, no slash command. Step 3 below is **required, not optional** — the plugin install alone leaves you with a connector that can never work.
+**Cowork desktop app** uses a GUI flow for install, but **MCP will never work for Atlas Cloud in Cowork at all** — not the plugin-bundled connector, and not a manually-added one either. Atlas Cloud's MCP server is a local `npx` process with no remote/hosted equivalent, and Cowork's "Add custom connector" form only accepts remote URL-based servers — the transport types are fundamentally incompatible, confirmed by direct testing of every candidate mechanism.
 
 1. Click **"+"** in the Personal plugins section (or the **Customize** menu in the left sidebar) → **"Add marketplace"** → enter `bigbossux/assetMaker`.
 2. Click **"+"** next to the prompt box → **Plugins** → **Add plugin** → find and install `asset-maker`.
-3. **Immediately add a working connector by hand** — the one that just got installed with the plugin is stuck holding a literal, un-filled-in placeholder (Cowork doesn't resolve `.mcp.json`'s `${ATLASCLOUD_API_KEY}` against anything, and that connector's config can't be edited afterward). Go to **Settings → Customize → Connectors → Add → "Add custom connector"** and fill in:
-
-   | Field | Value |
-   |---|---|
-   | Name | `atlascloud` (or `atlascloud-working`, to tell it apart from the broken bundled one) |
-   | Command | `npx` |
-   | Arguments | `-y atlascloud-mcp` |
-   | Environment Variables — name | `ATLASCLOUD_API_KEY` |
-   | Environment Variables — value | your real key from [atlascloud.ai/console/api-keys](https://www.atlascloud.ai/console/api-keys), typed directly — never `${ATLASCLOUD_API_KEY}` or any other placeholder |
-
-   The bundled connector from step 2 will still be visible in your connector list but will never work — the one you just added is what actually connects.
+3. **Skip MCP entirely for Atlas Cloud in Cowork** — put your key in a `.env` file (gitignored) in whatever project folder is connected to your Cowork session:
+   ```
+   ATLASCLOUD_API_KEY=apikey-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+   ```
+   Every skill in this plugin calls the Atlas Cloud REST API directly with `curl` when running in Cowork (reading the key from that file), rather than going through `mcp__atlascloud__*` tools — see `skills/setup/SKILL.md`'s Path B for the exact pattern.
 
 To try it locally instead of from GitHub, point at a local clone:
 ```bash
@@ -79,7 +73,7 @@ Atlas Cloud's API is read-only for billing — there's no way to add credit prog
 **How you set these depends on which Claude surface you're using:**
 
 - **Claude Code CLI / Claude Desktop**: set them in your shell profile or a project `.env` file. **Don't wrap the value in quotes** (`export KEY=value`, not `export KEY="value"`) — a quoting bug in Claude Desktop's `.mcp.json` env-var expansion can bake literal quote characters into the value, which Atlas Cloud then rejects as invalid.
-- **Cowork**: see step 3 under "Install" above — shell env vars don't apply, and it requires manually adding a custom connector with the real key typed directly into Cowork's own form.
+- **Cowork**: MCP doesn't work for this server at all here — see step 3 under "Install" above. The key goes in a `.env` file in your mounted project folder, read directly by `curl` calls, not through any MCP connector.
 
 Full troubleshooting for both paths: `skills/setup/SKILL.md`.
 
