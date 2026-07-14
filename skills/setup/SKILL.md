@@ -9,6 +9,8 @@ Run this once per machine (or per project, if the user wants project-scoped conf
 
 > If something goes wrong here that a future setup should know about — a new env/auth/MCP quirk — see `log-lesson` before moving on.
 
+**If you're in Cowork, check the installed plugin version first, before troubleshooting anything else.** Confirmed by direct testing: Cowork has been observed to never pick up updates to a plugin installed from this marketplace, even across repeated remove-and-re-add of both the plugin and the marketplace entry — an install can stay pinned to whatever version it first grabbed through many subsequent pushes to this repo, with no known fix yet. If the installed version (visible in Cowork's plugin detail view) is behind what's in `.claude-plugin/plugin.json` on GitHub, don't trust its instructions — the fastest reliable fix is to skip the plugin mechanism entirely: `git clone` this repo, connect the folder to the Cowork session, and read the skill files under `skills/` directly rather than relying on the installed plugin.
+
 ## 1. Verify Node.js and npm
 
 ```bash

@@ -14,13 +14,13 @@ This repo is both the plugin and its own marketplace (`.claude-plugin/marketplac
 **CLI:**
 ```bash
 claude plugin marketplace add bigbossux/assetMaker
-claude plugin install asset-maker@bigbossux
+claude plugin install asset-maker@assetmaker-mkt
 ```
 
 **Interactive (Claude Code CLI only — `/plugin` is not available in Cowork):**
 ```
 /plugin marketplace add bigbossux/assetMaker
-/plugin install asset-maker@bigbossux
+/plugin install asset-maker@assetmaker-mkt
 ```
 
 **Cowork desktop app** uses a GUI flow for install. Neither the plugin-bundled `atlascloud` connector nor a manually-added one can reach Atlas Cloud's MCP server directly — it's a local `npx` process with no remote/hosted equivalent, and Cowork's "Add custom connector" form only accepts remote URL-based servers. Two ways around that, both documented in `skills/setup/SKILL.md`'s Path B:
@@ -34,7 +34,7 @@ claude plugin install asset-maker@bigbossux
 To try it locally instead of from GitHub, point at a local clone:
 ```bash
 claude plugin marketplace add ./assetMaker
-claude plugin install asset-maker@bigbossux
+claude plugin install asset-maker@assetmaker-mkt
 ```
 
 ## Setup
@@ -84,7 +84,9 @@ Built after a session generating a character-driven promo video via Atlas Cloud 
 
 ## Self-improvement
 
-This plugin is meant to keep learning. Whenever a mistake, cost surprise, or tool bug turns up while using it, `log-lesson` writes the fix back into the relevant skill's own instructions (with your confirmation before anything is committed/pushed) — so the next project that installs this plugin starts out already knowing what this one had to learn the hard way. **Remember that updates aren't automatic**: this repo pins a `version` in `plugin.json`, so anywhere it's already installed needs `/plugin update` (or `claude plugin marketplace update assetMaker`) to pick up new lessons.
+This plugin is meant to keep learning. Whenever a mistake, cost surprise, or tool bug turns up while using it, `log-lesson` writes the fix back into the relevant skill's own instructions (with your confirmation before anything is committed/pushed) — so the next project that installs this plugin starts out already knowing what this one had to learn the hard way. **Remember that updates aren't automatic**: this repo pins a `version` in `plugin.json`, so anywhere it's already installed needs `/plugin update` (or `claude plugin marketplace update assetmaker-mkt`) to pick up new lessons.
+
+**Cowork specifically has been observed to never pick up updates at all**, even across repeated remove-and-re-add of both the plugin and the marketplace entry — confirmed by direct testing, a real install stayed pinned to its original install-time version through many subsequent pushes. There's no known fix for this yet. If you're on Cowork and skill instructions seem outdated or wrong compared to this README/repo, don't trust the installed plugin — instead, `git clone` this repo, connect the folder to your Cowork session, and ask Claude to read the skill files under `skills/` directly rather than relying on the plugin install.
 
 ## Roadmap
 
