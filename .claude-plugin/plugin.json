@@ -1,0 +1,12 @@
+{
+  "name": "asset-maker",
+  "version": "0.1.0",
+  "description": "Generate images, video, and audio via Atlas Cloud (with mandatory cost checks), and do free local video editing/reframing via Remotion + hyperframes.",
+  "author": {
+    "name": "Lukas Pajma"
+  },
+  "homepage": "https://github.com/bigbossux/assetMaker",
+  "repository": "https://github.com/bigbossux/assetMaker",
+  "license": "UNLICENSED",
+  "keywords": ["video", "image", "audio", "atlas-cloud", "remotion", "hyperframes", "generation"]
+}
