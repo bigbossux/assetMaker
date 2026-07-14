@@ -17,11 +17,16 @@ claude plugin marketplace add bigbossux/assetMaker
 claude plugin install asset-maker@bigbossux
 ```
 
-**Interactive (Claude Code / Cowork):**
+**Interactive (Claude Code CLI only — `/plugin` is not available in Cowork):**
 ```
 /plugin marketplace add bigbossux/assetMaker
 /plugin install asset-maker@bigbossux
 ```
+
+**Cowork desktop app** uses a GUI flow instead, no slash command:
+1. Click **"+"** in the Personal plugins section (or the **Customize** menu in the left sidebar) → **"Add marketplace"** → enter `bigbossux/assetMaker`.
+2. Click **"+"** next to the prompt box → **Plugins** → **Add plugin** → find and install `asset-maker`.
+3. **The bundled `atlascloud` MCP connector will not work as-is in Cowork** — see "Environment variables" below, this needs one extra manual step.
 
 To try it locally instead of from GitHub, point at a local clone:
 ```bash
@@ -60,7 +65,10 @@ Atlas Cloud's API is read-only for billing — there's no way to add credit prog
 | `ATLASCLOUD_API_KEY` | Yes | Atlas Cloud generation (image/video/audio) |
 | `REPLICATE_API_TOKEN` | Only if you opt in during setup | Additional Replicate-hosted models |
 
-**Don't wrap these in quotes** in your shell config (`export KEY=value`, not `export KEY="value"`). A quoting bug observed in Claude Desktop's `.mcp.json` env-var expansion can bake literal quote characters into the value it passes to the MCP server, which Atlas Cloud then rejects as an invalid key. See `skills/setup/SKILL.md` for the full troubleshooting path if you hit this.
+**How you set these depends on which Claude surface you're using — see `skills/setup/SKILL.md` for the full walkthrough:**
+
+- **Claude Code CLI / Claude Desktop**: set them in your shell profile or a project `.env` file. **Don't wrap the value in quotes** (`export KEY=value`, not `export KEY="value"`) — a quoting bug in Claude Desktop's `.mcp.json` env-var expansion can bake literal quote characters into the value, which Atlas Cloud then rejects as invalid.
+- **Cowork**: shell-based env vars don't apply at all — Cowork doesn't expand `${VAR}` placeholders, and the plugin-bundled `atlascloud` connector's config is read-only after install. You need to add your own custom connector by hand (Settings → Customize → Connectors → Add → "Add custom connector", command `npx`, args `-y atlascloud-mcp`, and the real key typed directly into that form's Environment Variables field). The plugin-bundled connector will still show up but won't work — the one you add by hand is what actually connects.
 
 ## Why this exists
 
