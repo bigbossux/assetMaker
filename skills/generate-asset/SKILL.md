@@ -12,12 +12,21 @@ Atlas Cloud (`mcp__atlascloud__*` tools, or direct REST fallback — see below) 
 1. **Check current balance.** `atlas_get_balance`, or if that tool is failing auth (see Troubleshooting below), `curl -H "Authorization: Bearer $ATLASCLOUD_API_KEY" https://api.atlascloud.ai/public/v1/balance`.
 2. **Survey alternatives.** Call `atlas_list_models` filtered to the relevant type (Image/Video/Audio) — do not default to the first or most-familiar model. Compare at least one cheaper option against whatever you'd naturally reach for.
 3. **Pricing is not the flat headline price.** The "$X/request" shown by `atlas_get_model_info` is a floor, not the real cost for video especially — video billing scales with resolution × duration (tokens). A 9s/1080p `reference-to-video` render has cost roughly $2–3 in practice; a 4s/1080p render roughly $1–1.5; 720p is meaningfully cheaper than 1080p for the same duration. Use `atlas_get_model_costs` (needs `start_date`/`end_date`, e.g. today's date for both) against recent history if you want a real empirical anchor instead of guessing.
-4. **State to the user, before submitting:**
-   - The exact model you're about to use, and its estimated cost for this specific call (resolution, duration, or token estimate).
-   - The cheaper alternative(s) you found and their price.
-   - The expected quality tradeoff of the cheaper option (lower resolution, weaker lip-sync/motion fidelity, known limitations of that model/tier — check the model's tags/description for hints like "Fast" or "Lite" variants).
-5. **Get explicit go-ahead before submitting.** Do not chain multiple paid regenerations back-to-back (e.g. iterating on a prompt fix, lip-sync, an artifact) without checking in on cost after each one — a single silent retry loop can burn a large fraction of a budget in a few requests.
-6. **Prefer cheap validation first.** If testing whether a prompt fix works, use a shorter duration / lower resolution / single test frame before committing to a full-price full-resolution run.
+4. **Always show a price confirmation before generating — Higgsfield-style.** Don't just mention cost in passing inside a longer message; surface it as its own clear, structured block the user can't miss, every single time, no exceptions for "small" or "obviously cheap" calls either. Use this shape:
+
+   ```
+   💰 Estimated cost: $X.XX
+      Model: <model id> (<resolution>, <duration>s if video)
+      Cheaper option: <alt model id> — $Y.YY (<tradeoff: e.g. "720p instead of 1080p, softer text">)
+      Balance after: $Z.ZZ of $B.BB remaining
+
+   Proceed with <model id>, or use the cheaper option?
+   ```
+
+   Then actually wait for the answer — use `AskUserQuestion` when there's a real choice to make (e.g. proceed vs. cheaper alt vs. cancel), not a plain yes/no buried in prose.
+
+5. **Get explicit go-ahead before submitting.** Do not chain multiple paid regenerations back-to-back (e.g. iterating on a prompt fix, lip-sync, an artifact) without re-running the price confirmation and checking in on cost after each one — a single silent retry loop can burn a large fraction of a budget in a few requests.
+6. **Prefer cheap validation first.** If testing whether a prompt fix works, use a shorter duration / lower resolution / single test frame before committing to a full-price full-resolution run — and still show the price confirmation for that cheap test, not just the final run.
 
 ## Generation workflow
 
