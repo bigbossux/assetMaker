@@ -23,15 +23,13 @@ claude plugin install asset-maker@bigbossux
 /plugin install asset-maker@bigbossux
 ```
 
-**Cowork desktop app** uses a GUI flow for install, but **MCP will never work for Atlas Cloud in Cowork at all** — not the plugin-bundled connector, and not a manually-added one either. Atlas Cloud's MCP server is a local `npx` process with no remote/hosted equivalent, and Cowork's "Add custom connector" form only accepts remote URL-based servers — the transport types are fundamentally incompatible, confirmed by direct testing of every candidate mechanism.
+**Cowork desktop app** uses a GUI flow for install. Neither the plugin-bundled `atlascloud` connector nor a manually-added one can reach Atlas Cloud's MCP server directly — it's a local `npx` process with no remote/hosted equivalent, and Cowork's "Add custom connector" form only accepts remote URL-based servers. Two ways around that, both documented in `skills/setup/SKILL.md`'s Path B:
 
 1. Click **"+"** in the Personal plugins section (or the **Customize** menu in the left sidebar) → **"Add marketplace"** → enter `bigbossux/assetMaker`.
 2. Click **"+"** next to the prompt box → **Plugins** → **Add plugin** → find and install `asset-maker`.
-3. **Skip MCP entirely for Atlas Cloud in Cowork** — put your key in a `.env` file (gitignored) in whatever project folder is connected to your Cowork session:
-   ```
-   ATLASCLOUD_API_KEY=apikey-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-   ```
-   Every skill in this plugin calls the Atlas Cloud REST API directly with `curl` when running in Cowork (reading the key from that file), rather than going through `mcp__atlascloud__*` tools — see `skills/setup/SKILL.md`'s Path B for the exact pattern.
+3. Pick one:
+   - **Quick, no extra infrastructure**: skip MCP for Atlas Cloud entirely in Cowork — put your key in a `.env` file (gitignored) in your connected project folder, and every skill calls the REST API directly with `curl` instead of `mcp__atlascloud__*` tools.
+   - **Real MCP tool calls**: deploy `cloudflare-mcp-proxy/` (included in this repo) to your own Cloudflare account — a small Worker that re-exposes Atlas Cloud's key tools as an actual remote MCP server with a real URL, which Cowork's connector form can point at directly. See `cloudflare-mcp-proxy/README.md`.
 
 To try it locally instead of from GitHub, point at a local clone:
 ```bash

@@ -42,16 +42,15 @@ Atlas Cloud powers all paid generation (image/video/audio models). **How you set
 2. If confirmed, fall back to calling the Atlas Cloud REST API directly via `curl` for generation calls in this session (see `generate-asset` skill) rather than the `mcp__atlascloud__*` tools, and tell the user the MCP layer needs a fresh chat (not just an app restart) to pick up the current config.
 3. `atlas_get_model_info` / `atlas_search_docs` are read-only and tend to keep working even when the auth-gated tools (`atlas_get_balance`, `atlas_generate_*`, `atlas_upload_media`) don't — safe to use those for model lookups regardless.
 
-### Path B: Cowork (MCP will never work here for this server — use direct API calls instead)
+### Path B: Cowork
 
 **Ruled out by direct testing, do not re-suggest these:**
 - The `atlascloud` connector bundled with the plugin install: Cowork doesn't expand `${VAR}` placeholders, so it's stuck holding the literal text `${ATLASCLOUD_API_KEY}` as its "value," and that config is read-only after install with no reinstall-time prompt either.
-- Manually adding a custom connector (Settings → Connectors → Add → "Add custom connector"): this form is for **remote, URL-based MCP servers** only (fields are `Name`, `Remote MCP server URL`, plus optional OAuth Client ID/Secret) — there's no command, arguments, or env-var field at all. Atlas Cloud's MCP server (`atlascloud-mcp`) is a **local process launched via `npx`**, not a hosted URL — Atlas Cloud's own docs confirm they don't offer a remote/hosted MCP endpoint. The transport types are fundamentally incompatible; no combination of values in that form will ever work.
+- Pointing Cowork's "Add custom connector" form directly at Atlas Cloud: that form is for **remote, URL-based MCP servers** only (fields are `Name`, `Remote MCP server URL`, plus optional OAuth Client ID/Secret). Atlas Cloud's MCP server (`atlascloud-mcp`) is a **local process launched via `npx`**, not a hosted URL, and Atlas Cloud's own docs confirm they offer no remote/hosted MCP endpoint. No combination of values in that form will ever reach `atlascloud-mcp` directly.
 
-**The actual working approach: skip MCP for Atlas Cloud entirely in Cowork, and call the REST API directly with `curl`.** Cowork's sandbox has real bash access, so this isn't a workaround-of-last-resort like it is for the Desktop bug (Path A) — in Cowork, it's simply the only path, and every skill in this plugin should reach for it directly rather than trying `mcp__atlascloud__*` tools first and falling back.
+**Two working options, pick based on whether the user wants real MCP tool calls or is fine with direct API calls:**
 
-Getting a real key into an otherwise-ephemeral session:
-
+**Path B1 — quick, zero extra infrastructure (direct `curl`, no MCP at all in Cowork).** Skip MCP for Atlas Cloud entirely and call the REST API directly. Cowork's sandbox has real bash access, so this isn't a workaround-of-last-resort like it is for the Desktop bug (Path A) — used this way, it's just the plan.
 1. Ask the user which project folder is connected/mounted in this Cowork session.
 2. Have them create a file there (never committed to git — confirm it's covered by `.gitignore`, add an entry if not) containing the key, e.g. `.env`:
    ```
@@ -63,9 +62,14 @@ Getting a real key into an otherwise-ephemeral session:
    export $(grep ATLASCLOUD_API_KEY .env | xargs)
    curl -s -H "Authorization: Bearer $ATLASCLOUD_API_KEY" https://api.atlascloud.ai/public/v1/balance
    ```
-4. Use this same pattern for all generation calls in Cowork (see `generate-asset`'s direct-`curl` examples) — `POST` to `https://api.atlascloud.ai/api/v1/model/generateVideo` / `generateImage` / `generateAudio`, poll `GET .../prediction/{id}`.
+4. Use this same pattern for all generation calls (see `generate-asset`'s direct-`curl` examples) — `POST` to `.../generateVideo` / `generateImage` / `generateAudio`, poll `GET .../prediction/{id}`.
 
-This is genuinely simpler than fighting Cowork's connector UI, and — since Atlas Cloud has no remote MCP offering at all — there's no pending Anthropic/Atlas Cloud feature that would make the connector-based approach start working later. Don't re-attempt the MCP path in Cowork without first checking whether Atlas Cloud has since published a remote/hosted MCP endpoint (see `atlas_search_docs`/their docs) — that's the only thing that would change this conclusion.
+**Path B2 — real MCP tool calls, via a self-hosted proxy (one-time Cloudflare Workers deployment).** This plugin ships `cloudflare-mcp-proxy/` — a small Worker that reimplements Atlas Cloud's key tools (`atlas_get_balance`, `atlas_generate_image`, `atlas_generate_video`, `atlas_generate_audio`, `atlas_get_prediction`, `atlas_list_models`, `atlas_get_model_costs`) as a genuine remote MCP server, calling Atlas Cloud's REST API from Worker code with the key held server-side as a Cloudflare secret. This gives Cowork something with an actual URL to point "Add custom connector" at, sidestepping the local-process-vs-remote-URL mismatch entirely instead of working around it.
+1. Follow `cloudflare-mcp-proxy/README.md` to deploy: `npm install`, generate a random token (`openssl rand -hex 24`), `wrangler secret put PROXY_AUTH_TOKEN` and `wrangler secret put ATLASCLOUD_API_KEY` (**the user runs these themselves in their own terminal** — real secrets should never be typed into this chat or passed through your own tool calls), then `wrangler deploy`.
+2. Verify with `node scripts/smoke-test.mjs "<url>/mcp/<token>"` before adding to Cowork — it connects as a real MCP client and confirms tools list + a real `atlas_get_balance` call, which is far more reliable than guessing from raw `curl` against the MCP wire protocol.
+3. Add the resulting `<worker-url>/mcp/<token>` to Cowork's "Add custom connector" (Remote MCP server URL field). Tell the user explicitly to treat that URL like a password — the token is the only thing standing between anyone who has it and their Atlas Cloud balance.
+
+Path B2 is more setup but gives real tool-calling through Cowork's native MCP UI; Path B1 is faster to get working and has no hosting to maintain. Ask the user which they'd prefer rather than assuming — default to suggesting B1 first for a quick unblock, then offer B2 if they want the fuller integration.
 
 ## 3. Replicate (optional, opt-in — off by default)
 

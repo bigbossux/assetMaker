@@ -11,7 +11,7 @@ Read-only — costs nothing, never needs confirmation.
 
 `atlas_get_balance` needs a working `ATLASCLOUD_API_KEY` exactly like generation does — this is not a lighter-weight check that somehow skips auth.
 
-- **In Cowork, don't call `atlas_get_balance` at all** — Atlas Cloud's MCP server can't be configured to work there (see `setup`'s Path B; ruled out by direct testing, not just an occasional failure). Go straight to reading the key from the mounted project folder's `.env` file and calling `curl -s -H "Authorization: Bearer $ATLASCLOUD_API_KEY" https://api.atlascloud.ai/public/v1/balance` directly.
+- **In Cowork**: the plugin-bundled `atlas_get_balance` tool can't be configured to work (see `setup`'s Path B; ruled out by direct testing, not just an occasional failure). If the user has deployed `setup`'s Path B2 (the self-hosted Cloudflare Worker proxy), a real working balance tool should be available under that connector's own tool names — use it. Otherwise, read the key from the mounted project folder's `.env` file and call `curl -s -H "Authorization: Bearer $ATLASCLOUD_API_KEY" https://api.atlascloud.ai/public/v1/balance` directly (Path B1).
 - **Claude Code CLI / Desktop**: try `atlas_get_balance` normally; if it fails with "Invalid or expired API key" despite a good key, fall back to the same curl (using your shell's exported var) — see `setup`'s Path A / `generate-asset`'s auth-path section if that also fails.
 
 Report `available` clearly, e.g. "$5.88 available."
