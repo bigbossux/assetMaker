@@ -37,7 +37,20 @@ Atlas Cloud (`mcp__atlascloud__*` tools, or direct REST fallback — see below) 
 3. For image/audio reference inputs from local files, either use `atlas_upload_media` (returns a public URL) or inline as a base64 data URI (`data:image/png;base64,...`) directly in the request body — both work for `reference_images`/`reference_audios`/`images` style fields on most models.
 4. Submit the generation call. It returns a prediction `id` immediately (status `processing`) — this is async.
 5. Poll `atlas_get_prediction(prediction_id=...)` (or `GET /api/v1/model/prediction/{id}` / `/result/{id}` directly) every ~5-10s until `status` is `completed`/`succeeded`/`failed`/`timeout`. Don't poll faster than every 5s.
-6. Download `outputs[]` URLs to the project's asset folder once complete.
+6. Download `outputs[]` URLs to the project's asset folder once complete — see "Reusable asset library" below for *where*, since it depends on whether this is a reusable named asset or a one-off.
+
+## Reusable asset library
+
+Before generating, check whether what's needed already exists — reusing a prior asset is free, regenerating it is not.
+
+**Reusable, named assets** — characters/personas, voices, brand assets (logo, recurring intro/outro, established palette) — get generated once and kept:
+- Save them under a dedicated, persistent library location in the project (e.g. `ad-assets/characters/`, `ad-assets/voices/`, `ad-assets/brand/` — match whatever convention the project already uses; ask if none exists yet rather than inventing a new one silently).
+- Write or update an index/definition file alongside them (a `characters.json`-style manifest: appearance, personality, role, reference image path, `voice_id` used) so both you and the user can see what's already available without re-reading every file.
+- Before generating a new character/voice/brand asset, check this index first. If something close already exists, ask whether to reuse it, adapt it, or genuinely make something new — don't silently regenerate a near-duplicate.
+
+**Simple/one-off images** — anything generated for a single use that isn't meant to be a recurring named asset (a quick illustration, a one-off test render, a throwaway concept image) — save these to a **separate, simpler folder** from the reusable library (e.g. a project-level `images/` or `generated/` folder), not mixed in with `ad-assets/characters/` or similar. Keeps the reusable library from getting cluttered with things nobody will look up again by name.
+
+If it's unclear whether something should be reusable or one-off, ask — the cost of guessing wrong is either a cluttered library or an asset nobody can find later to avoid regenerating it.
 
 ## Troubleshooting: MCP auth failing despite a good key
 

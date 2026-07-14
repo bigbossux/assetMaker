@@ -27,12 +27,16 @@ Run the `setup` skill first (`"set up assetMaker"`). It will:
 | Skill | What it does | Cost |
 |---|---|---|
 | `setup` | First-time configuration, including the Replicate opt-in | free |
-| `generate-asset` | Generate a new image, video, or audio/voice clip via Atlas Cloud | paid — always confirmed with you first |
+| `brainstorm` | Conversational ideation to shape a concept before spending anything on a generation that might miss the mark | free |
+| `generate-asset` | Generate a new image, video, or audio/voice clip via Atlas Cloud, saved into a reusable asset library (or a separate folder for one-off images) | paid — always confirmed with you first |
 | `produce-movie` | Longer/multi-scene video: reusable characters+voices first, then a scenario you approve *before* any paid generation, then per-scene generation, then free assembly | paid (per scene, all pre-approved) + free (assembly) |
 | `edit-video` | Reframe, resize, stitch, caption, or otherwise edit *existing* footage via Remotion/hyperframes | free |
+| `check-credits` | Shows your current Atlas Cloud balance and recent spend | free, read-only |
 | `log-lesson` | Files a mistake/gotcha back into the relevant skill's own instructions, so the next project that installs this plugin doesn't repeat it | free |
 
 Atlas Cloud video models cap out around 10-15s per call — for anything longer, `produce-movie` is what generates multiple scenes and stitches them into one video.
+
+Atlas Cloud's API is read-only for billing — there's no way to add credit programmatically (via this plugin or otherwise). Top up at atlascloud.ai's web console when `check-credits` shows you're running low.
 
 ## Environment variables
 
