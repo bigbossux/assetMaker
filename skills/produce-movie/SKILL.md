@@ -14,7 +14,7 @@ A single Atlas Cloud video generation call tops out around 10-15 seconds. A "mov
 Before generating any scene, generate or collect everything that needs to stay *consistent* across every scene, once:
 
 - **Characters/personas**: reference images for each character (generate via `generate-asset` if none exist, e.g. with an image model), plus a written definition (appearance, personality, role) saved to a `characters.json`-style file in the project so every later scene prompt can reference it instead of re-describing the character from scratch and drifting.
-- **Voices**: generate each character's voice line(s) via a TTS model (see `generate-asset`) as clean, separate per-line clips — not one merged multi-speaker track. If a character speaks in multiple scenes, keep voice/model/settings identical across all of them (same `voice_id`, same stability setting) so the voice doesn't drift scene to scene.
+- **Voices**: generate each character's voice line(s) via a TTS model (see `generate-asset`) as clean, separate per-line clips — not one merged multi-speaker track. **Always let the user hear and confirm each voice before it's used in any scene generation** — this is `generate-asset`'s voice-preview step; don't skip it just because it's inside a bigger multi-scene workflow. If a character speaks in multiple scenes, keep voice/model/settings identical across all of them (same `voice_id`, same stability setting) so the voice doesn't drift scene to scene.
 - **Brand assets**: logo, intro/outro key art, color palette — anything that appears in every video, generate once and reuse.
 
 Save all of this under a dedicated assets folder (e.g. `ad-assets/characters/`, `ad-assets/brand/`) so it survives across sessions and multiple videos, not just the one you're making right now.
@@ -45,7 +45,13 @@ Total estimated cost: $Y.YY   |   Balance after: $Z.ZZ of $B.BB
 
 **Do not generate anything until the user explicitly confirms the scenario.** If they want changes, revise and re-confirm — don't proceed on an assumption that silence means approval.
 
-## Phase 2: Generate each scene
+## Phase 2: Storyboard (optional — ask, don't assume)
+
+Once the scenario is confirmed, ask the user whether they want a full storyboard before any video generation starts: one cheap still image per scene (an image-model call per scene, using the planned reference images/characters and describing that scene's key frame), shown as a set before committing to the actual video renders.
+
+This is optional because some users will want to move straight to video, but it's worth offering every time on a multi-scene job — the cost of N still images is a small fraction of N video renders, and it catches composition/character/continuity problems across the whole movie at once rather than one expensive scene at a time. If the user declines, skip straight to Phase 3.
+
+## Phase 3: Generate each scene
 
 For each confirmed scene, use `generate-asset` (which handles its own per-call price confirmation — still show it, don't skip it just because the total was already approved; per-scene actuals can differ from the estimate).
 
@@ -53,7 +59,7 @@ For each confirmed scene, use `generate-asset` (which handles its own per-call p
 
 Apply the same per-scene lessons from `generate-asset`'s known-failure-modes section (limb hallucination, partial lip-sync, background fidelity, separate audio tracks per speaker) to every scene, not just the first one you generate.
 
-## Phase 3: Assemble the movie (free)
+## Phase 4: Assemble the movie (free)
 
 Once all scenes are generated and approved individually, use `edit-video` to:
 1. Normalize codec/resolution/framerate across all scene clips (and intro/outro if present).
@@ -61,6 +67,6 @@ Once all scenes are generated and approved individually, use `edit-video` to:
 3. Concatenate in order via `ffmpeg`'s `filter_complex concat` (re-encoding, not the stream-copy demuxer, given clips may differ slightly in audio channel count etc.).
 4. Pull frames at every transition point and inspect them before calling it done — a clean exit code doesn't mean the cut is clean.
 
-## Phase 4: Review with the user
+## Phase 5: Review with the user
 
-Show the user the assembled movie (or at least confirm frames from each transition) and ask if any individual scene needs a re-roll before considering the movie final. A single bad scene should be regenerated on its own (back to Phase 2 for that scene, with its own price confirmation) — don't regenerate scenes that are already approved.
+Show the user the assembled movie (or at least confirm frames from each transition) and ask if any individual scene needs a re-roll before considering the movie final. A single bad scene should be regenerated on its own (back to Phase 3 for that scene, with its own price confirmation) — don't regenerate scenes that are already approved.

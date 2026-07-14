@@ -39,6 +39,16 @@ Atlas Cloud (`mcp__atlascloud__*` tools, or direct REST fallback — see below) 
 5. Poll `atlas_get_prediction(prediction_id=...)` (or `GET /api/v1/model/prediction/{id}` / `/result/{id}` directly) every ~5-10s until `status` is `completed`/`succeeded`/`failed`/`timeout`. Don't poll faster than every 5s.
 6. Download `outputs[]` URLs to the project's asset folder once complete — see "Reusable asset library" below for *where*, since it depends on whether this is a reusable named asset or a one-off.
 
+## Before generating video specifically
+
+Video is the most expensive asset type here, and mistakes in it (wrong composition, wrong voice) are the most expensive to redo. Two cheap checks up front catch most of that before spending on the actual render:
+
+**Storyboard preview.** Before submitting a video generation, ask the user whether they want a storyboard preview first — don't assume either way. If yes: generate a still image (a cheap image-model call, using the same reference images and describing the same key composition/framing the video prompt would produce) representing the scene's opening or key frame, and get the user's approval on it before generating the actual video. A still image is a small fraction of the cost of the video it's previewing — catching a wrong character pose, bad framing, or off-brand background here is far cheaper than discovering it after a full video render. If the user declines, proceed straight to video generation with the normal price confirmation.
+
+**Voice preview.** If the video includes dialogue/narration, never feed a voice straight into a video generation without the user having heard it first. Generate the voice line(s) as a standalone audio clip (see the TTS models in `atlas_list_models(type="Audio")`), tell the user where the file is, and explicitly ask them to listen and confirm it fits the character before it's used in any video generation — you cannot listen to audio yourself, so this has to be a real pause-and-wait step, not something you approve on the user's behalf. This is also far cheaper than video, and re-generating just the voice if it's wrong costs a fraction of re-generating the video that used it.
+
+Both of these are one-time costs per reusable character/voice (see "Reusable asset library" below) — once a voice or a character's visual key frame is approved, reuse it rather than re-previewing every single scene.
+
 ## Reusable asset library
 
 Before generating, check whether what's needed already exists — reusing a prior asset is free, regenerating it is not.

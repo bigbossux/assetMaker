@@ -3,6 +3,7 @@
 A Claude Code / Claude Desktop plugin for generating and editing image, video, and audio assets.
 
 - **Generation** (paid): Atlas Cloud, across image/video/audio models — Claude surveys available models and their pricing per request rather than defaulting to one, and always checks your balance and confirms estimated cost with you before submitting a generation.
+- **Preview before you pay for video**: a storyboard (cheap still images) is always offered before a multi-scene video's actual renders, and any voice is generated and confirmed by you *before* it's used in a video generation.
 - **Editing** (free): Remotion + hyperframes, run locally — reframing/resizing, stitching clips together, muxing audio, captions. No API cost for anything that doesn't need new pixels generated.
 - **Replicate**: optional, off by default. You choose whether to enable it during setup.
 
@@ -29,7 +30,7 @@ Run the `setup` skill first (`"set up assetMaker"`). It will:
 | `setup` | First-time configuration, including the Replicate opt-in | free |
 | `brainstorm` | Conversational ideation to shape a concept before spending anything on a generation that might miss the mark | free |
 | `generate-asset` | Generate a new image, video, or audio/voice clip via Atlas Cloud, saved into a reusable asset library (or a separate folder for one-off images) | paid — always confirmed with you first |
-| `produce-movie` | Longer/multi-scene video: reusable characters+voices first, then a scenario you approve *before* any paid generation, then per-scene generation, then free assembly | paid (per scene, all pre-approved) + free (assembly) |
+| `produce-movie` | Longer/multi-scene video: reusable characters+voices first, then a scenario you approve, then an optional storyboard preview, then per-scene generation, then free assembly | paid (per scene, all pre-approved) + free (assembly) |
 | `edit-video` | Reframe, resize, stitch, caption, or otherwise edit *existing* footage via Remotion/hyperframes | free |
 | `check-credits` | Shows your current Atlas Cloud balance and recent spend | free, read-only |
 | `log-lesson` | Files a mistake/gotcha back into the relevant skill's own instructions, so the next project that installs this plugin doesn't repeat it | free |
