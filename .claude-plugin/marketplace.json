@@ -1,0 +1,12 @@
+{
+  "name": "bigbossux",
+  "owner": {
+    "name": "Lukas Pajma"
+  },
+  "plugins": [
+    {
+      "name": "asset-maker",
+      "source": "./"
+    }
+  ]
+}

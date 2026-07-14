@@ -9,11 +9,25 @@ A Claude Code / Claude Desktop plugin for generating and editing image, video, a
 
 ## Install
 
-```
-claude plugin install bigbossux/assetMaker
+This repo is both the plugin and its own marketplace (`.claude-plugin/marketplace.json` alongside `.claude-plugin/plugin.json`). Add the marketplace first, then install from it — a plain `claude plugin install owner/repo` does **not** work without this step; Claude's plugin installer specifically needs a marketplace source, not just a plugin repo.
+
+**CLI:**
+```bash
+claude plugin marketplace add bigbossux/assetMaker
+claude plugin install asset-maker@bigbossux
 ```
 
-or add it to a project directly by cloning/symlinking this repo's contents alongside your project, or referencing it as a marketplace source per Claude Code's plugin docs.
+**Interactive (Claude Code / Cowork):**
+```
+/plugin marketplace add bigbossux/assetMaker
+/plugin install asset-maker@bigbossux
+```
+
+To try it locally instead of from GitHub, point at a local clone:
+```bash
+claude plugin marketplace add ./assetMaker
+claude plugin install asset-maker@bigbossux
+```
 
 ## Setup
 
