@@ -28,7 +28,10 @@ Run the `setup` skill first (`"set up assetMaker"`). It will:
 |---|---|---|
 | `setup` | First-time configuration, including the Replicate opt-in | free |
 | `generate-asset` | Generate a new image, video, or audio/voice clip via Atlas Cloud | paid — always confirmed with you first |
+| `produce-movie` | Longer/multi-scene video: reusable characters+voices first, then a scenario you approve *before* any paid generation, then per-scene generation, then free assembly | paid (per scene, all pre-approved) + free (assembly) |
 | `edit-video` | Reframe, resize, stitch, caption, or otherwise edit *existing* footage via Remotion/hyperframes | free |
+
+Atlas Cloud video models cap out around 10-15s per call — for anything longer, `produce-movie` is what generates multiple scenes and stitches them into one video.
 
 ## Environment variables
 

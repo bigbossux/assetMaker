@@ -1,6 +1,6 @@
 {
   "name": "asset-maker",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Generate images, video, and audio via Atlas Cloud (with mandatory cost checks), and do free local video editing/reframing via Remotion + hyperframes.",
   "author": {
     "name": "Lukas Pajma"
