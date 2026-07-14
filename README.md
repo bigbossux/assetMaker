@@ -57,3 +57,7 @@ Built after a session generating a character-driven promo video via Atlas Cloud 
 ## Self-improvement
 
 This plugin is meant to keep learning. Whenever a mistake, cost surprise, or tool bug turns up while using it, `log-lesson` writes the fix back into the relevant skill's own instructions (with your confirmation before anything is committed/pushed) — so the next project that installs this plugin starts out already knowing what this one had to learn the hard way. **Remember that updates aren't automatic**: this repo pins a `version` in `plugin.json`, so anywhere it's already installed needs `/plugin update` (or `claude plugin marketplace update assetMaker`) to pick up new lessons.
+
+## Roadmap
+
+Not built yet — see [ROADMAP.md](./ROADMAP.md) for ideas under consideration (Google/Meta Ads publishing integration, social-engagement agents).
