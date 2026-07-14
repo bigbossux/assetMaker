@@ -7,6 +7,8 @@ description: Use when the user wants to generate an image, video, or audio/voice
 
 Atlas Cloud (`mcp__atlascloud__*` tools, or direct REST fallback — see below) provides image, video, and audio (TTS) generation across many provider models. This skill is paid generation — follow the cost discipline below on every call, no exceptions.
 
+> If something goes wrong here that a future run of this plugin should know about — an unexpected cost, a model behaving unlike its schema, a new failure mode — see `log-lesson` before moving on.
+
 ## Before generating anything: cost discipline (mandatory)
 
 1. **Check current balance.** `atlas_get_balance`, or if that tool is failing auth (see Troubleshooting below), `curl -H "Authorization: Bearer $ATLASCLOUD_API_KEY" https://api.atlascloud.ai/public/v1/balance`.

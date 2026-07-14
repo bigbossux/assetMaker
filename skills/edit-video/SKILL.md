@@ -7,6 +7,8 @@ description: Use when the user wants to reframe, resize, crop, stitch, concatena
 
 Everything in this skill runs locally with Remotion and/or hyperframes and `ffmpeg` — no Atlas Cloud API calls, no cost. Always prefer this over regenerating footage through a paid model when the task is really a composition/format change on assets that already exist.
 
+> If something goes wrong here that a future run of this plugin should know about — a new ffmpeg/Remotion gotcha, a wrong assumption about existing footage — see `log-lesson` before moving on.
+
 ## When to use this vs. regenerating
 
 - Changing aspect ratio, resolution, or file size of existing footage → **this skill** (free).

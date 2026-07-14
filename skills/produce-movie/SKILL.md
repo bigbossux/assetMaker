@@ -7,6 +7,8 @@ description: Use when the user wants a longer video than a single generation cal
 
 A single Atlas Cloud video generation call tops out around 10-15 seconds. A "movie" — anything longer, or anything with an intro/scene/outro structure — is built by generating several short scenes and stitching them together for free. Example shape: 5× 10s scenes generated via `generate-asset`, assembled into one ~50s video via `edit-video`. Never skip straight to generating scenes; follow the phases below in order.
 
+> If something goes wrong in this workflow that a future run should know about — a bad continuity assumption, a cost estimate that was off across a multi-scene budget — see `log-lesson` before moving on.
+
 ## Phase 0: Reusable assets first
 
 Before generating any scene, generate or collect everything that needs to stay *consistent* across every scene, once:

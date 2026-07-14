@@ -7,6 +7,8 @@ description: Use when the user wants to set up, configure, or initialize the ass
 
 Run this once per machine (or per project, if the user wants project-scoped config) before using `generate-asset` or `edit-video`.
 
+> If something goes wrong here that a future setup should know about — a new env/auth/MCP quirk — see `log-lesson` before moving on.
+
 ## 1. Verify Node.js and npm
 
 ```bash
