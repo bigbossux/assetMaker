@@ -18,16 +18,16 @@ Everything in this skill runs locally with Remotion and/or hyperframes and `ffmp
 
 ## Setup check
 
-Look for a Remotion project (`remotion.config.ts`/`.js` + `package.json` with a `remotion` dependency) in or near the project's video assets folder.
+Look for a Remotion project (`remotion.config.ts`/`.js` + `package.json` with a `remotion` dependency) in or near the project's video assets folder. **Check that `node_modules` actually exists and is populated, not just that `package.json` does** — in Cowork specifically, the sandbox VM is destroyed between sessions, so a project folder can persist (if it's in a connected/mounted folder) while its `node_modules` from a prior session does not. A `package.json` alone is not evidence the tools are actually installed and runnable right now.
 
-- **If found**: use it.
-- **If not found**: scaffold one next to the video assets, non-interactively:
+- **If found and `node_modules` is populated**: use it.
+- **If not found, or `package.json` exists but `node_modules` is missing/empty**: (re)install, non-interactively:
   ```bash
-  npx create-video@latest --yes --blank <folder-name>
+  npx create-video@latest --yes --blank <folder-name>   # only if package.json is missing entirely
   cd <folder-name> && npm install
   npm install hyperframes
   ```
-  Use `--no-tailwind` only if the user doesn't want Tailwind. Confirm the install succeeded (`npx hyperframes --version`, check `package.json` for `remotion`) before proceeding.
+  Use `--no-tailwind` only if the user doesn't want Tailwind. Confirm the install succeeded (`npx hyperframes --version`, check `package.json` for `remotion`) before proceeding. See `setup`'s Cowork section for why this re-check matters there specifically.
 
 ## Reframing to a different aspect ratio (e.g. 16:9 → 9:16 for mobile)
 

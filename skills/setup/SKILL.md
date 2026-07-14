@@ -69,7 +69,15 @@ Replicate gives access to additional third-party models beyond Atlas Cloud's cat
 
 These do NOT require Atlas Cloud or any paid account. They run entirely locally for compositing, reframing, resizing, and stitching video that's already been generated — no reason to gate them behind setup. If the project doesn't have a Remotion project yet, `edit-video` will scaffold one on first use (see that skill).
 
-## 5. Confirm
+## 5. If running in Cowork specifically
+
+Cowork runs sessions in an isolated sandbox VM that's **destroyed at the end of each session** — this is different from Claude Code CLI on a real machine, where installs just sit on disk. Two practical consequences:
+
+- **Don't assume a tool installed in a previous session is still there.** At the start of each Cowork session, re-check rather than skip straight to using `remotion`/`hyperframes`/etc. — see `edit-video`'s setup check, which verifies `node_modules` actually exists, not just that `package.json` does.
+- **Prefer installs that live inside a connected/mounted project folder over system-wide installs.** `npm install` into a project's own `node_modules` is written into the mounted folder itself, which is more likely to persist than something installed to a system-level location outside it (e.g. via a system package manager). This is undocumented/unconfirmed either way — treat it as "probably better, not guaranteed" rather than a fact to rely on.
+- **Homebrew (`brew`) is likely unavailable.** The sandbox is a Linux VM even when the host OS is macOS, and Homebrew is macOS-native — this is unconfirmed by Anthropic's docs either way, but assume `brew install <anything>` may fail in Cowork specifically (it works fine in Claude Code CLI on a real Mac). Prefer a pip/npm-based alternative when one exists. Concretely: for audio transcription (used e.g. to split a merged multi-speaker voice track by word-level timestamp — see `generate-asset`'s multi-speaker-audio note), prefer `pip install openai-whisper` over `brew install whisper-cpp` if there's any chance this runs in Cowork — pip is far more likely to be available in a Linux sandbox than Homebrew.
+
+## 6. Confirm
 
 Summarize what's configured:
 - Atlas Cloud: ✓ (or ✗ — blocking)
