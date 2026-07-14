@@ -46,6 +46,8 @@ Atlas Cloud powers all paid generation (image/video/audio models). **How you set
 
 Confirmed by direct testing: Cowork does not do shell-style `${VAR}` expansion at all. The `atlascloud` MCP server that comes bundled with this plugin (declared in `.mcp.json` as `"ATLASCLOUD_API_KEY": "${ATLASCLOUD_API_KEY}"`) gets installed with that literal placeholder text as its value — not a real key, and not expanded from anywhere. Worse, once installed via the plugin, this connector's Environment Variables field is **read-only** in Cowork's Settings UI, and reinstalling the plugin does not prompt for a real value either. There is currently no way to make the plugin-bundled `atlascloud` connector work in Cowork.
 
+**Treat what follows as a required part of installing this plugin in Cowork, not an optional fix for later.** Do it immediately after installing the plugin — don't wait for `generate-asset` or `check-credits` to fail first and only then walk the user through this.
+
 **The actual working path is to add your own custom connector, separately from installing the plugin:**
 
 1. In Cowork, go to **Settings → Customize → Connectors → Add → "Add custom connector"**.
